@@ -16,7 +16,7 @@ print(args.aln_dir)
 
 genome_names = {}
 
-for file in os.listdir(args.aln_dir):
+for file in sorted(os.listdir(args.aln_dir)):
     if file.endswith(".aln"):
         in_fh = open(args.aln_dir + file, 'r')
         print(file)
