@@ -1,6 +1,9 @@
 This package does the following:
 Before: 
-330 core genes were identified
+330 core genes were identified, however, they were not universally present
+After: for i in *.aln; do if [ $(grep -c '>' $i) = 584 ]; then cp $i ~/workspace/core_tree/universal/; fi done
+286 genes universally present, which will be used for tree building.
+
 An alignment using MAFFT of all these genes was created
 A single alignment in FASTA format was created from these single alignment files, based on sorted gene name
 A single query file of the first element of the aligned file for each of the 330 core genes was created
