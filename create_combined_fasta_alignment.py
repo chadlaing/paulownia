@@ -22,6 +22,7 @@ for file in sorted(os.listdir(args.aln_dir)):
         print(file)
 
         current_name = None
+        current_string = None
         for line in in_fh:
             line = line.strip()
             if line[:1] is ">":
@@ -31,6 +32,5 @@ for file in sorted(os.listdir(args.aln_dir)):
                 genome_names[current_name] += line
 
 out_fh = open(args.out_file, 'w')
-
 for key, value in genome_names.iteritems():
     out_fh.write('>' + key + "\n" + value + "\n")
