@@ -21,7 +21,7 @@ parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
     currently aligned genomes", default="universal_combined.aln")
 parser.add_argument("-o", "--out_tree", help="The tree based on all genomes",
                     default="universal_combined.tre")
-parser.add_argument("-c", "--clustal_exe", help="The location of the clustal \
+parser.add_argument("-z", "--clustal_exe", help="The location of the clustal \
     omega executable", default="/usr/bin/clustalo")
 parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
     construction.", default="/tmp/")
@@ -39,16 +39,16 @@ def run_blast():
     call([args.blast_dir + "blastn", "-db", "new_genome", "-query", args.query,
           "-outfmt", '6 " qseqid qlen sseqid length pident sseq "', "-out",
           args.tmp_dir + "new_genome_blast.out", "-max_target_seqs", "1"])
-    return
+    return (args.tmp_dir + "new_genome_blast.out")
 
 
-def parse_blast_results():
+def parse_blast_results(blast_out_file):
     "The blast results are output in the same order as the input query string.\
         We check to ensure that all the queries are present in the result at a\
         total percent identity >= 90. If everything passes, we create a \
         temporary file to be used as an alignment against the current \
         universal alignment"
-    in_fh = open(args.out_file, 'r')
+    in_fh = open(blast_out_file, 'r')
 
     alignment_string = None
     total_query = 0
@@ -76,8 +76,11 @@ def parse_blast_results():
 
 def create_new_alignment(temp_aln):
     "Based on the current universal alignment, add the new genome to it."
+    temp_new_aln = args.tmp_dir + "temp_universal.aln"
+    call([args.clustal_exe, "-i", temp_aln, "--profile1", args.alignment_file,
+          "-o", temp_new_aln])
 
 
-run_blast()
-create_new_alignment(
-    parse_blast_results())
+blast_file = run_blast
+new_aln = parse_blast_results(blast_file)
+create_new_alignment(new_aln)
