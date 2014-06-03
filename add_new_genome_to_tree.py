@@ -75,7 +75,7 @@ def parse_blast_results(blast_out_file):
 
     if total_query == args.number_query_genes:
         temp_file_name = "temp.aln"
-        aln_fh = open(args.tmp_dir + temp_file_name, 'r')
+        aln_fh = open(args.tmp_dir + temp_file_name, 'w')
         aln_fh.write(">" + name + "\n" + alignment_string + "\n")
     else:
         print('Only ' + str(total_query) + ' genes present in the genome '\
