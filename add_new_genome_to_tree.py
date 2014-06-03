@@ -34,9 +34,11 @@ def run_blast():
     "Makes a new blast database based on the input genome. Runs blast against \
         this genome using the core query genes as input."
     call([args.blast_dir + "makeblastdb",  "-dbtype",  "nucl", "-in",
-          args.new_genome, "-title", "new_genome", "-out", "new_genome"])
+          args.new_genome, "-title", "new_genome", "-out",
+          args.tmp_dir + "new_genome"])
 
-    call([args.blast_dir + "blastn", "-db", "new_genome", "-query", args.query,
+    call([args.blast_dir + "blastn", "-db", args.tmp_dir + "new_genome",
+          "-query", args.query,
           "-outfmt", '6 " qseqid qlen sseqid length pident sseq "', "-out",
           args.tmp_dir + "new_genome_blast.out", "-max_target_seqs", "1"])
     return (args.tmp_dir + "new_genome_blast.out")
@@ -63,13 +65,13 @@ def parse_blast_results(blast_out_file):
         total_percent_id = float(columns[3])\
                          * float(columns[4])\
                          / float(columns[1])
-
+        print(total_percent_id)
         if name is None:
             name = columns[0]
 
         if total_percent_id >= 90:
-            total_query += 1
             alignment_string += columns[5]
+            total_query += 1
 
     if total_query == args.number_query_genes:
         temp_file_name = "temp.aln"
