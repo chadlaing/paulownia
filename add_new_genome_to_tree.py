@@ -18,9 +18,9 @@ parser.add_argument("-c", "--clearcut_exe", help="The location of the \
 parser.add_argument("-b", "--blast_dir", help="The location of the blast \
     program program", default="/usr/bin/")
 parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
-    currently aligned genomes", default="universal_combined.aln")
+    currently aligned genomes", default="./data/universal_combined.aln")
 parser.add_argument("-o", "--out_tree", help="The tree based on all genomes",
-                    default="universal_combined.tre")
+                    default="./data/universal_combined.tre")
 parser.add_argument("-z", "--clustal_exe", help="The location of the clustal \
     omega executable", default="/usr/bin/clustalo")
 parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
@@ -50,16 +50,19 @@ def parse_blast_results(blast_out_file):
         universal alignment"
     in_fh = open(blast_out_file, 'r')
 
-    alignment_string = None
+    alignment_string = ""
     total_query = 0
     name = None
     temp_file_name = None
 
     for line in in_fh:
-        columns = line.strip.split()
+        clean = line.strip()
+        columns = clean.split()
 
         #get the percent id based on the total length of the query
-        total_percent_id = columns[3] * columns[4] / columns[1]
+        total_percent_id = float(columns[3])\
+                         * float(columns[4])\
+                         / float(columns[1])
 
         if name is None:
             name = columns[0]
@@ -73,7 +76,8 @@ def parse_blast_results(blast_out_file):
         aln_fh = open(args.tmp_dir + temp_file_name, 'r')
         aln_fh.write(">" + name + "\n" + alignment_string + "\n")
     else:
-        print('Not all query genes present in the genome ' + str(name))
+        print('Only ' + str(total_query) + ' genes present in the genome '\
+            + str(name) + '. Expected '  + str(args.number_query_genes))
         raise SystemExit(0)
 
     return temp_file_name
@@ -87,6 +91,5 @@ def create_new_alignment(temp_aln):
 
 
 blast_file = run_blast()
-print("" + blast_file + "")
-# new_aln = parse_blast_results(blast_file)
+new_aln = parse_blast_results(blast_file)
 # create_new_alignment(new_aln)
