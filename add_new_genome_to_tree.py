@@ -3,6 +3,7 @@
 import argparse
 import os
 from subprocess import call
+import shutil
 
 
 """Runs blast based on the 286 query genes, creates a concatenated alignment \
@@ -56,10 +57,17 @@ def parse_blast_results(blast_out_file):
     total_query = 0
     name = None
     temp_file_name = None
+    genome_names = {}
 
     for line in in_fh:
         clean = line.strip()
         columns = clean.split()
+
+        genome_name = columns[0]
+
+        #check for a genome that is already present
+        if genome_name in genome_names:
+            continue
 
         #get the percent id based on the total length of the query
         total_percent_id = float(columns[3])\
@@ -72,10 +80,11 @@ def parse_blast_results(blast_out_file):
         if total_percent_id >= 90:
             alignment_string += columns[5]
             total_query += 1
+            genome_names[genome_name] = 1
 
     if total_query == args.number_query_genes:
-        temp_file_name = "temp.aln"
-        aln_fh = open(args.tmp_dir + temp_file_name, 'w')
+        temp_file_name =  args.tmp_dir + "temp.aln"
+        aln_fh = open(temp_file_name, 'w')
         aln_fh.write(">" + name + "\n" + alignment_string + "\n")
     else:
         print('Only ' + str(total_query) + ' genes present in the genome '\
@@ -88,10 +97,29 @@ def parse_blast_results(blast_out_file):
 def create_new_alignment(temp_aln):
     "Based on the current universal alignment, add the new genome to it."
     temp_new_aln = args.tmp_dir + "temp_universal.aln"
-    call([args.clustal_exe, "-i", temp_aln, "--profile1", args.alignment_file,
-          "-o", temp_new_aln])
+    call([args.clustal_exe, "--dealign", "-i", temp_aln,
+          "-o", temp_new_aln, "--threads", "3",
+          "--profile1", args.alignment_file])
+
+
+def create_temp_all_alignment(new_genome_aln):
+    "Takes the concatenated string of universal genes and appends it to the\
+        bottom of the universal alignment file for use in Clustal Omega"
+
+    combined_temp_file = args.tmp_dir + "combined_tmp.fasta"
+    
+    shutil.copyfile(args.alignment_file,combined_temp_file)
+
+    new_aln_fh = open(new_genome_aln, 'r')
+    combined_out_fh = open(combined_temp_file, 'a')
+
+    for line in new_aln_fh:
+        combined_out_fh.write(line)
+
+    return combined_temp_file
 
 
 blast_file = run_blast()
 new_aln = parse_blast_results(blast_file)
-# create_new_alignment(new_aln)
+all_tmp_aln = create_temp_all_alignment(new_aln)
+create_new_alignment(all_tmp_aln)
