@@ -14,7 +14,7 @@ parser.add_argument("new_genome", help="Location of the new genome \
 parser.add_argument("query", help="The input query genes used for \
     construction of the phylogeny")
 parser.add_argument("-c", "--clearcut_exe", help="The location of the \
-    clearcut fast-nj executable", default="/usr/bin/")
+    clearcut fast-nj executable", default="/usr/bin/clearcut")
 parser.add_argument("-b", "--blast_dir", help="The location of the blast \
     program program", default="/usr/bin/")
 parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
@@ -53,6 +53,8 @@ def parse_blast_results(blast_out_file):
     alignment_string = None
     total_query = 0
     name = None
+    temp_file_name = None
+
     for line in in_fh:
         columns = line.strip.split()
 
@@ -70,6 +72,9 @@ def parse_blast_results(blast_out_file):
         temp_file_name = "temp.aln"
         aln_fh = open(args.tmp_dir + temp_file_name, 'r')
         aln_fh.write(">" + name + "\n" + alignment_string + "\n")
+    else:
+        print('Not all query genes present in the genome ' + str(name))
+        raise SystemExit(0)
 
     return temp_file_name
 
@@ -81,6 +86,7 @@ def create_new_alignment(temp_aln):
           "-o", temp_new_aln])
 
 
-blast_file = run_blast
-new_aln = parse_blast_results(blast_file)
-create_new_alignment(new_aln)
+blast_file = run_blast()
+print("" + blast_file + "")
+# new_aln = parse_blast_results(blast_file)
+# create_new_alignment(new_aln)
