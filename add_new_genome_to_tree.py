@@ -67,7 +67,7 @@ def parse_blast_results(blast_out_file):
                          / float(columns[1])
         print(total_percent_id)
         if name is None:
-            name = columns[0]
+            name = columns[2]
 
         if total_percent_id >= 90:
             alignment_string += columns[5]
