@@ -14,6 +14,7 @@ This combined file is the query file used to search the new genome using BLAST+
 -a temporary file containing the previous alignment for each genome and the new allele is created and an alignment run
 -this new alignment file becomes the "NEW" version, which will be used for subsequent strain addition
 -the "new" alignments are combined in asciibetical order and added to the combined fasta alignment file, which contains all previous genomes and the concatenated alignments
--a new tree is built using fast_method
+-using MAFFT, the new concatenated hits are added to the previous alignment
+-a new tree is built using clearcut
 
 
