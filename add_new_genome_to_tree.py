@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
+import warnings
 import argparse
 import os
 from subprocess import call
+import shutil
 
 """Runs blast based on the 286 query genes, creates a concatenated alignment \
     for the new genome, adds to the existing universal alignment using MAFFT \
@@ -11,19 +13,21 @@ from subprocess import call
 SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser()
-parser.add_argument("new_genome", help="Location of the new genome \
-    fasta file")
+parser.add_argument("new_data", help="Location of the new genome \
+    fasta file(s). Can be a file or directory. If directory, assumes \
+    only fasta files inside, with consistently labelled headers.")
 parser.add_argument("query", help="The input query genes used for \
     construction of the phylogeny")
 parser.add_argument("-c", "--clearcut_exe", help="The location of the \
     clearcut fast-nj executable", default="/usr/bin/clearcut")
 parser.add_argument("-b", "--blast_dir", help="The location of the blast \
-    program program", default="/usr/bin/")
+    program directory", default="/usr/bin/")
 parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
     currently aligned genomes",
     default=SCRIPT_DIRECTORY + "/data/universal_combined.aln")
-parser.add_argument("-o", "--out_tree", help="The tree based on all genomes",
-                    default=SCRIPT_DIRECTORY+ "/data/universal_combined.tre")
+parser.add_argument("-o", "--out_tree", help="The new tree based on all \
+    previous genomes and the newly added one",
+    default=SCRIPT_DIRECTORY+ "/data/universal_combined.tre")
 parser.add_argument("-m", "--mafft_exe", help="The location of the MAFFT \
     executable", default="/usr/bin/mafft")
 parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
@@ -34,6 +38,28 @@ parser.add_argument("-p", "--percent_id_cutoff", help="The minimum percent \
     identity that a blast hit must have to be considered 'present'",
     default=90)
 args = parser.parse_args()
+
+
+def create_blast_query_file():
+    "If new_data is a directory, combine all the files into a query file for \
+    blast. If not, use the supplied file directly."
+
+    if os.path.isdir(args.new_data):
+        all_files = [f for f in os.listdir(args.new_data)
+            if os.path.isfile(os.path.join(args.new_data,f))]
+        out_FH = open(args.tmp_dir + 'blast_query.fasta','a')
+
+        for f in all_files:
+            in_FH = open(f,'r')
+
+            for line in in_FH:
+                out_FH.write(line)
+
+            #ensure each fasta sequence starts on a new line
+            out_FH.write("\n")
+    else:
+        return args.new_data
+
 
 
 def run_blast():
@@ -79,8 +105,7 @@ def parse_blast_results(blast_out_file):
                          * float(columns[4])\
                          / float(columns[1])
         print(total_percent_id)
-        if name is None:
-            name = columns[2]
+        name = columns[2]
 
         if total_percent_id >= args.percent_id_cutoff:
             alignment_string += columns[5]
@@ -99,35 +124,53 @@ def parse_blast_results(blast_out_file):
     return temp_file_name
 
 
-def create_new_alignment(temp_aln):
+def create_new_alignment(temp_concat):
     "Based on the current universal alignment, add the new genome to it."
     temp_new_aln = args.tmp_dir + "temp_universal.aln"
     aln_out_FH = open(temp_new_aln,"w")
 
-    call([args.mafft_exe, "--thread", "3", "--add", temp_aln,
+    call([args.mafft_exe, "--thread", "3", "--add", temp_concat,
           args.alignment_file],stdout=aln_out_FH)
+    return temp_new_aln
 
 
-def replace_old_alignment(new_aln):
-    "Given a new alignment, check that the file size of the new alignment \
-    is greater than the old (indicating successful addition of the genome). \
-    Otherwise keep the original alignment and print a warning"
+def replace_old_file(old_file,new_file):
+    "Given a new file, check that the file size of the new file \
+    is greater than the old (indicating successful addition of information). \
+    Otherwise keep the original file and print a warning. Creates a backup \
+    version of the file (.bak) for posterity."
 
-    old_aln_stat = os.stat(args.alignment_file)
-    old_size = old_aln_stat.st_size()
+    print("Old file: " + old_file)
+    print("New file: " + new_file)
 
-    new_aln_stat = os.stat(new_aln)
-    new_size = new_aln_stat.st_size()
+    old_file_stat = os.stat(old_file)
+    old_size = old_file_stat.st_size
+
+    new_file_stat = os.stat(new_file)
+    new_size = new_file_stat.st_size
 
     if new_size > old_size:
-        print("Replacing old alignment with one containing genome from " 
-            + args.new_genome)
-        
+        print("Replacing old file with one containing new data.")
+        shutil.copyfile(old_file,old_file + ".bak")
+        shutil.copyfile(new_file,old_file)
+    else:
+        warnings.warn("The newly generated file has a problem. \
+            Reverting to old file")
 
 
+def create_new_tree(new_aln):
+    "Runs clearcut on the new alignment. Return the filename."
+    temp_new_tree = args.tmp_dir + "temp_new.tre"
+    call([args.clearcut_exe,"--verbose", "--alignment","--DNA",
+            "--in=" + new_aln, "--out=" + temp_new_tree])
+    return(temp_new_tree)
 
+
+#start of program execution
 blast_file = run_blast()
-new_aln = parse_blast_results(blast_file)
-create_new_alignment(new_aln)
-
+new_concat = parse_blast_results(blast_file)
+new_aln = create_new_alignment(new_concat)
+new_tree = create_new_tree(new_aln)
+#replace_old_file(args.alignment_file,new_aln)
+#replace_old_file(args.out_tree,new_tree)
 
