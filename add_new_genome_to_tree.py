@@ -53,7 +53,7 @@ def parse_blast_results(blast_out_file):
         total percent identity >= 90. If everything passes, we create a \
         temporary file to be used as an alignment against the current \
         universal alignment"
-    in_fh = open(blast_out_file, 'r')
+    in_FH = open(blast_out_file, 'r')
 
     alignment_string = ""
     total_query = 0
@@ -86,8 +86,8 @@ def parse_blast_results(blast_out_file):
 
     if total_query == args.number_query_genes:
         temp_file_name =  args.tmp_dir + "temp.aln"
-        aln_fh = open(temp_file_name, 'w')
-        aln_fh.write(">" + name + "\n" + alignment_string + "\n")
+        aln_FH = open(temp_file_name, 'w')
+        aln_FH.write(">" + name + "\n" + alignment_string + "\n")
     else:
         print('Only ' + str(total_query) + ' genes present in the genome '\
             + str(name) + '. Expected '  + str(args.number_query_genes))
@@ -99,24 +99,26 @@ def parse_blast_results(blast_out_file):
 def create_new_alignment(temp_aln):
     "Based on the current universal alignment, add the new genome to it."
     temp_new_aln = args.tmp_dir + "temp_universal.aln"
-    call([args.clustal_exe, "--dealign", "-i", temp_aln,
-          "-o", temp_new_aln, "--threads", "3",
-          "--profile1", args.alignment_file])
+    aln_out_FH = open(temp_new_aln,"w")
+
+    call([args.mafft_exe, "--quiet", "--thread", "1", "--add", temp_aln,
+          args.alignment_file],stdout=aln_out_FH)
 
 
 def create_temp_all_alignment(new_genome_aln):
-    "Takes the concatenated string of universal genes and appends it to the\
-        bottom of the universal alignment file for use in Clustal Omega"
+    "Takes the concatenated string of universal genes from the new genome \
+        and appends it to the bottom of the universal alignment file for use \
+        in clearcut"
 
     combined_temp_file = args.tmp_dir + "combined_tmp.fasta"
     
     shutil.copyfile(args.alignment_file,combined_temp_file)
 
-    new_aln_fh = open(new_genome_aln, 'r')
-    combined_out_fh = open(combined_temp_file, 'a')
+    new_aln_FH = open(new_genome_aln, 'r')
+    combined_out_FH = open(combined_temp_file, 'a')
 
-    for line in new_aln_fh:
-        combined_out_fh.write(line)
+    for line in new_aln_FH:
+        combined_out_FH.write(line)
 
     return combined_temp_file
 
