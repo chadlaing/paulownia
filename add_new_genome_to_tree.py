@@ -53,7 +53,7 @@ def run_blast():
 def parse_blast_results(blast_out_file):
     "The blast results are output in the same order as the input query string.\
         We check to ensure that all the queries are present in the result at a\
-        total percent identity >= 90. If everything passes, we create a \
+        total percent identity >= ID. If everything passes, we create a \
         temporary file to be used as an alignment against the current \
         universal alignment"
     in_FH = open(blast_out_file, 'r')
@@ -109,9 +109,8 @@ def create_new_alignment(temp_aln):
 
 
 
-
 blast_file = run_blast()
 new_aln = parse_blast_results(blast_file)
 create_new_alignment(new_aln)
-#all_tmp_aln = create_temp_all_alignment(new_aln)
+
 
