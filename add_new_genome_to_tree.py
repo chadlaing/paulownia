@@ -108,6 +108,23 @@ def create_new_alignment(temp_aln):
           args.alignment_file],stdout=aln_out_FH)
 
 
+def replace_old_alignment(new_aln):
+    "Given a new alignment, check that the file size of the new alignment \
+    is greater than the old (indicating successful addition of the genome). \
+    Otherwise keep the original alignment and print a warning"
+
+    old_aln_stat = os.stat(args.alignment_file)
+    old_size = old_aln_stat.st_size()
+
+    new_aln_stat = os.stat(new_aln)
+    new_size = new_aln_stat.st_size()
+
+    if new_size > old_size:
+        print("Replacing old alignment with one containing genome from " 
+            + args.new_genome)
+        
+
+
 
 blast_file = run_blast()
 new_aln = parse_blast_results(blast_file)
