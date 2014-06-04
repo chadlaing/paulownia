@@ -3,11 +3,12 @@
 import argparse
 import os
 from subprocess import call
-import shutil
 
 """Runs blast based on the 286 query genes, creates a concatenated alignment \
     for the new genome, adds to the existing universal alignment using MAFFT \
     and launches clearcut to generate a new tree"""
+
+SCRIPT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser()
 parser.add_argument("new_genome", help="Location of the new genome \
@@ -19,9 +20,10 @@ parser.add_argument("-c", "--clearcut_exe", help="The location of the \
 parser.add_argument("-b", "--blast_dir", help="The location of the blast \
     program program", default="/usr/bin/")
 parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
-    currently aligned genomes", default="./data/universal_combined.aln")
+    currently aligned genomes",
+    default=SCRIPT_DIRECTORY + "/data/universal_combined.aln")
 parser.add_argument("-o", "--out_tree", help="The tree based on all genomes",
-                    default="./data/universal_combined.tre")
+                    default=SCRIPT_DIRECTORY+ "/data/universal_combined.tre")
 parser.add_argument("-m", "--mafft_exe", help="The location of the MAFFT \
     executable", default="/usr/bin/mafft")
 parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
@@ -29,7 +31,8 @@ parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
 parser.add_argument("-n", "--number_query_genes", help="The total number of \
     query genes to expect.", default=286)
 parser.add_argument("-p", "--percent_id_cutoff", help="The minimum percent \
-    identity that a blast hit must have to be considered 'present'")
+    identity that a blast hit must have to be considered 'present'",
+    default=90)
 args = parser.parse_args()
 
 
@@ -61,7 +64,7 @@ def parse_blast_results(blast_out_file):
     temp_file_name = None
     genome_names = {}
 
-    for line in in_fh:
+    for line in in_FH:
         clean = line.strip()
         columns = clean.split()
 
@@ -101,29 +104,14 @@ def create_new_alignment(temp_aln):
     temp_new_aln = args.tmp_dir + "temp_universal.aln"
     aln_out_FH = open(temp_new_aln,"w")
 
-    call([args.mafft_exe, "--quiet", "--thread", "1", "--add", temp_aln,
+    call([args.mafft_exe, "--thread", "3", "--add", temp_aln,
           args.alignment_file],stdout=aln_out_FH)
 
 
-def create_temp_all_alignment(new_genome_aln):
-    "Takes the concatenated string of universal genes from the new genome \
-        and appends it to the bottom of the universal alignment file for use \
-        in clearcut"
-
-    combined_temp_file = args.tmp_dir + "combined_tmp.fasta"
-    
-    shutil.copyfile(args.alignment_file,combined_temp_file)
-
-    new_aln_FH = open(new_genome_aln, 'r')
-    combined_out_FH = open(combined_temp_file, 'a')
-
-    for line in new_aln_FH:
-        combined_out_FH.write(line)
-
-    return combined_temp_file
 
 
 blast_file = run_blast()
 new_aln = parse_blast_results(blast_file)
-all_tmp_aln = create_temp_all_alignment(new_aln)
-create_new_alignment(all_tmp_aln)
+create_new_alignment(new_aln)
+#all_tmp_aln = create_temp_all_alignment(new_aln)
+
