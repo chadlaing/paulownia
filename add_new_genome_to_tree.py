@@ -5,9 +5,9 @@ import os
 from subprocess import call
 import shutil
 
-
 """Runs blast based on the 286 query genes, creates a concatenated alignment \
-    for the new genome and launches clearcut to generate a new tree"""
+    for the new genome, adds to the existing universal alignment using MAFFT \
+    and launches clearcut to generate a new tree"""
 
 parser = argparse.ArgumentParser()
 parser.add_argument("new_genome", help="Location of the new genome \
@@ -22,12 +22,14 @@ parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
     currently aligned genomes", default="./data/universal_combined.aln")
 parser.add_argument("-o", "--out_tree", help="The tree based on all genomes",
                     default="./data/universal_combined.tre")
-parser.add_argument("-z", "--clustal_exe", help="The location of the clustal \
-    omega executable", default="/usr/bin/clustalo")
+parser.add_argument("-m", "--mafft_exe", help="The location of the MAFFT \
+    executable", default="/usr/bin/mafft")
 parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
     construction.", default="/tmp/")
 parser.add_argument("-n", "--number_query_genes", help="The total number of \
     query genes to expect.", default=286)
+parser.add_argument("-p", "--percent_id_cutoff", help="The minimum percent \
+    identity that a blast hit must have to be considered 'present'")
 args = parser.parse_args()
 
 
@@ -77,7 +79,7 @@ def parse_blast_results(blast_out_file):
         if name is None:
             name = columns[2]
 
-        if total_percent_id >= 90:
+        if total_percent_id >= args.percent_id_cutoff:
             alignment_string += columns[5]
             total_query += 1
             genome_names[genome_name] = 1
