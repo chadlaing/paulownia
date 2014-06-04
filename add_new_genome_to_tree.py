@@ -45,35 +45,36 @@ def create_blast_query_file():
     blast. If not, use the supplied file directly."
 
     if os.path.isdir(args.new_data):
+        blast_query_file = args.tmp_dir + 'blast_query.fasta'
         all_files = [f for f in os.listdir(args.new_data)
             if os.path.isfile(os.path.join(args.new_data,f))]
-        out_FH = open(args.tmp_dir + 'blast_query.fasta','a')
+        out_FH = open(blast_query_file, 'a')
 
         for f in all_files:
-            in_FH = open(f,'r')
-
-            for line in in_FH:
-                out_FH.write(line)
+            out_FH.write(f.read())
 
             #ensure each fasta sequence starts on a new line
             out_FH.write("\n")
+        return blast_query_file
     else:
         return args.new_data
 
 
 
-def run_blast():
+def run_blast(new_file):
     "Makes a new blast database based on the input genome. Runs blast against \
         this genome using the core query genes as input."
+    db_name = args.tmp_dir + "new_genome"
     call([args.blast_dir + "makeblastdb",  "-dbtype",  "nucl", "-in",
-          args.new_genome, "-title", "new_genome", "-out",
-          args.tmp_dir + "new_genome"])
+          new_file, "-title", "new_genome", "-out",
+          db_name])
 
-    call([args.blast_dir + "blastn", "-db", args.tmp_dir + "new_genome",
+    blast_output = args.tmp_dir + "new_genome_blast.out"
+    call([args.blast_dir + "blastn", "-db", db_name,
           "-query", args.query,
           "-outfmt", '6 " qseqid qlen sseqid length pident sseq "', "-out",
-          args.tmp_dir + "new_genome_blast.out", "-max_target_seqs", "1"])
-    return (args.tmp_dir + "new_genome_blast.out")
+          blast_output, "-max_target_seqs", "1"])
+    return (blast_output)
 
 
 def parse_blast_results(blast_out_file):
