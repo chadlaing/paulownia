@@ -40,23 +40,29 @@ parser.add_argument("-p", "--percent_id_cutoff", help="The minimum percent \
 args = parser.parse_args()
 
 
-def create_blast_query_file():
-    "If new_data is a directory, combine all the files into a query file for \
+def create_blast_data_file(new_data):
+    "If new_data is a directory, combine all the files into a file for \
     blast. If not, use the supplied file directly."
 
-    if os.path.isdir(args.new_data):
+    if os.path.isdir(new_data):
+        print("Using all files in " + new_data)
         blast_query_file = args.tmp_dir + 'blast_query.fasta'
-        all_files = [f for f in os.listdir(args.new_data)
-            if os.path.isfile(os.path.join(args.new_data,f))]
+
+        all_files = os.listdir(new_data)
+
         out_FH = open(blast_query_file, 'a')
 
         for f in all_files:
-            out_FH.write(f.read())
+            full_file = os.path.normpath(new_data) + os.sep + f
+            print("File: " + full_file)
+            in_FH = open(full_file,'r')
+            out_FH.write(in_FH.read())
 
             #ensure each fasta sequence starts on a new line
             out_FH.write("\n")
         return blast_query_file
     else:
+        print("Using the file " + new_data)
         return args.new_data
 
 
@@ -73,7 +79,7 @@ def run_blast(new_file):
     call([args.blast_dir + "blastn", "-db", db_name,
           "-query", args.query,
           "-outfmt", '6 " qseqid qlen sseqid length pident sseq "', "-out",
-          blast_output, "-max_target_seqs", "1"])
+          blast_output, "-max_target_seqs", "1000"])
     return (blast_output)
 
 
@@ -168,10 +174,11 @@ def create_new_tree(new_aln):
 
 
 #start of program execution
-blast_file = run_blast()
-new_concat = parse_blast_results(blast_file)
-new_aln = create_new_alignment(new_concat)
-new_tree = create_new_tree(new_aln)
+blast_data = create_blast_data_file(args.new_data)
+# blast_file = run_blast()
+# new_concat = parse_blast_results(blast_file)
+# new_aln = create_new_alignment(new_concat)
+# new_tree = create_new_tree(new_aln)
 #replace_old_file(args.alignment_file,new_aln)
 #replace_old_file(args.out_tree,new_tree)
 
