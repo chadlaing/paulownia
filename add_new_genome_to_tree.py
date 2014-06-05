@@ -46,7 +46,8 @@ def create_blast_data_file(new_data):
 
     if os.path.isdir(new_data):
         print("Using all files in " + new_data)
-        blast_query_file = args.tmp_dir + 'blast_query.fasta'
+        blast_query_file = (os.path.normpath(args.tmp_dir) + os.sep 
+            + 'blast_query.fasta')
 
         all_files = os.listdir(new_data)
 
@@ -68,14 +69,16 @@ def create_blast_data_file(new_data):
 
 
 def run_blast(new_file):
-    "Makes a new blast database based on the input genome. Runs blast against \
-        this genome using the core query genes as input."
-    db_name = args.tmp_dir + "new_genome"
+    "Makes a new blast database based on the input genome(s). Runs blast \
+    using the core query genes as 'query sequences'."
+
+    db_name = os.path.normpath(args.tmp_dir) + os.sep + "new_genome"
     call([args.blast_dir + "makeblastdb",  "-dbtype",  "nucl", "-in",
           new_file, "-title", "new_genome", "-out",
           db_name])
 
-    blast_output = args.tmp_dir + "new_genome_blast.out"
+    blast_output = (os.path.normpath(args.tmp_dir) + os.sep 
+        + "new_genome_blast.out")
     call([args.blast_dir + "blastn", "-db", db_name,
           "-query", args.query,
           "-outfmt", '6 " qseqid qlen sseqid length pident sseq "', "-out",
@@ -120,7 +123,7 @@ def parse_blast_results(blast_out_file):
             genome_names[genome_name] = 1
 
     if total_query == args.number_query_genes:
-        temp_file_name =  args.tmp_dir + "temp.aln"
+        temp_file_name =  os.path.normpath(args.tmp_dir) + os.sep + "temp.aln"
         aln_FH = open(temp_file_name, 'w')
         aln_FH.write(">" + name + "\n" + alignment_string + "\n")
     else:
@@ -133,7 +136,8 @@ def parse_blast_results(blast_out_file):
 
 def create_new_alignment(temp_concat):
     "Based on the current universal alignment, add the new genome to it."
-    temp_new_aln = args.tmp_dir + "temp_universal.aln"
+    temp_new_aln = (os.path.normpath(args.tmp_dir) + os.sep
+        + "temp_universal.aln")
     aln_out_FH = open(temp_new_aln,"w")
 
     call([args.mafft_exe, "--thread", "3", "--add", temp_concat,
@@ -167,7 +171,7 @@ def replace_old_file(old_file,new_file):
 
 def create_new_tree(new_aln):
     "Runs clearcut on the new alignment. Return the filename."
-    temp_new_tree = args.tmp_dir + "temp_new.tre"
+    temp_new_tree = os.path.normpath(args.tmp_dir) + os.sep + "temp_new.tre"
     call([args.clearcut_exe,"--verbose", "--alignment","--DNA",
             "--in=" + new_aln, "--out=" + temp_new_tree])
     return(temp_new_tree)
@@ -175,7 +179,7 @@ def create_new_tree(new_aln):
 
 #start of program execution
 blast_data = create_blast_data_file(args.new_data)
-# blast_file = run_blast()
+blast_file = run_blast(blast_data)
 # new_concat = parse_blast_results(blast_file)
 # new_aln = create_new_alignment(new_concat)
 # new_tree = create_new_tree(new_aln)
