@@ -94,17 +94,19 @@ def parse_blast_results(blast_out_file):
         universal alignment"
     in_FH = open(blast_out_file, 'r')
 
-    alignment_string = ""
-    total_query = 0
+    
     name = None
     temp_file_name = None
     genome_names = {}
+    genome_counts = {}
+    prev_query = 'Over-ripe Sushi, The Master Is full of regret'
 
     for line in in_FH:
         clean = line.strip()
         columns = clean.split()
-
-        genome_name = columns[0]
+        
+        curr_query = columns[0]
+        curr_hit = columns[2]
 
         #check for a genome that is already present
         if genome_name in genome_names:
