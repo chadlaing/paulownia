@@ -5,6 +5,7 @@ import argparse
 import os
 from subprocess import call
 import shutil
+from collections import defaultdict
 
 """Runs blast based on the 286 query genes, creates a concatenated alignment \
     for the new genome, adds to the existing universal alignment using MAFFT \
@@ -97,9 +98,10 @@ def parse_blast_results(blast_out_file):
     
     name = None
     temp_file_name = None
-    genome_names = {}
-    genome_counts = {}
-    prev_query = 'Over-ripe Sushi, The Master Is full of regret'
+    genome_hits = {}
+    genome_concat = defaultdict(str)
+    genome_counts = defaultdict(int)
+    prev_query = None
 
     for line in in_FH:
         clean = line.strip()
@@ -108,31 +110,34 @@ def parse_blast_results(blast_out_file):
         curr_query = columns[0]
         curr_hit = columns[2]
 
-        #check for a genome that is already present
-        if genome_name in genome_names:
+        #check for a hit that is already present
+        #we only want the top hit of each query sequence
+        if (curr_query,curr_hit) in genome_hits:
             continue
+        else:
+            genome_hits[(curr_query,curr_hit)] = 1
+
 
         #get the percent id based on the total length of the query
         total_percent_id = float(columns[3])\
                          * float(columns[4])\
-                         / float(columns[1])
-        print(total_percent_id)
-        name = columns[2]
+                         / float(columns[1])    
 
         if total_percent_id >= args.percent_id_cutoff:
-            alignment_string += columns[5]
-            total_query += 1
-            genome_names[genome_name] = 1
+            genome_concat[curr_hit] += columns[5]
+            genome_counts[curr_hit] += 1
 
-    if total_query == args.number_query_genes:
-        temp_file_name =  os.path.normpath(args.tmp_dir) + os.sep + "temp.aln"
-        aln_FH = open(temp_file_name, 'w')
-        aln_FH.write(">" + name + "\n" + alignment_string + "\n")
-    else:
-        print('Only ' + str(total_query) + ' genes present in the genome '\
-            + str(name) + '. Expected '  + str(args.number_query_genes))
-        raise SystemExit(0)
-
+    #check that all new genomes have a hit for all query sequences
+    #if they don't, emit warning and remove from further analyses
+    temp_file_name =  os.path.normpath(args.tmp_dir) + os.sep + "temp.aln"
+    aln_FH = open(temp_file_name, 'w')
+    for key, value in genome_counts.iteritems():
+        if value == args.number_query_genes:            
+            aln_FH.write(">" + key + "\n" + genome_concat[value] + "\n")
+        else:
+            print('Only ' + str(value) + ' genes present in the genome '
+                + str(key) + '. Expected '  + str(args.number_query_genes)
+                + " removing " + str(key) + " from alignment")
     return temp_file_name
 
 
@@ -182,9 +187,9 @@ def create_new_tree(new_aln):
 #start of program execution
 blast_data = create_blast_data_file(args.new_data)
 blast_file = run_blast(blast_data)
-# new_concat = parse_blast_results(blast_file)
-# new_aln = create_new_alignment(new_concat)
-# new_tree = create_new_tree(new_aln)
+new_concat = parse_blast_results(blast_file)
+#new_aln = create_new_alignment(new_concat)
+#new_tree = create_new_tree(new_aln)
 #replace_old_file(args.alignment_file,new_aln)
 #replace_old_file(args.out_tree,new_tree)
 
