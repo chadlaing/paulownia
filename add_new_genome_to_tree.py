@@ -47,12 +47,12 @@ def create_blast_data_file(new_data):
 
     if os.path.isdir(new_data):
         print("Using all files in " + new_data)
-        blast_query_file = (os.path.normpath(args.tmp_dir) + os.sep 
-            + 'blast_query.fasta')
+        blast_data_file = (os.path.normpath(args.tmp_dir) + os.sep 
+            + 'blast_data.fasta')
 
         all_files = os.listdir(new_data)
 
-        out_FH = open(blast_query_file, 'a')
+        out_FH = open(blast_data_file, 'w')
 
         for f in all_files:
             full_file = os.path.normpath(new_data) + os.sep + f
@@ -62,7 +62,7 @@ def create_blast_data_file(new_data):
 
             #ensure each fasta sequence starts on a new line
             out_FH.write("\n")
-        return blast_query_file
+        return blast_data_file
     else:
         print("Using the file " + new_data)
         return args.new_data
@@ -188,8 +188,8 @@ def create_new_tree(new_aln):
 blast_data = create_blast_data_file(args.new_data)
 blast_file = run_blast(blast_data)
 new_concat = parse_blast_results(blast_file)
-#new_aln = create_new_alignment(new_concat)
-#new_tree = create_new_tree(new_aln)
+new_aln = create_new_alignment(new_concat)
+new_tree = create_new_tree(new_aln)
 #replace_old_file(args.alignment_file,new_aln)
 #replace_old_file(args.out_tree,new_tree)
 
