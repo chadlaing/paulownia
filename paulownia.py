@@ -33,15 +33,12 @@ parser.add_argument("-m", "--mafft_exe", help="The location of the MAFFT \
     executable", default="/usr/bin/mafft")
 parser.add_argument("-t", "--tmp_dir", help="Location of temporary file \
     construction.", default="/tmp/")
-parser.add_argument("-n", "--number_query_genes", help="The total number of \
-    query genes to expect.", default=286)
 parser.add_argument("-p", "--percent_id_cutoff", help="The minimum percent \
     identity that a blast hit must have to be considered 'present'",
     default=90)
-parser.add_argument("-r","--number_of_threads", help="The number of threads \
+parser.add_argument("-n","--number_of_threads", help="The number of threads \
     to use in the alignment and tree building processes", default="1")
 args = parser.parse_args()
-
 
 def count_query_sequences(query_file):
     "Counts the number of query sequences in the multi-fasta input file"
@@ -53,6 +50,8 @@ def count_query_sequences(query_file):
         if line[:1] is '>':
             counter += 1
     return counter
+
+NUM_QUERY_SEQUENCES = count_query_sequences(args.query)
 
 def create_blast_data_file(new_data):
     "If new_data is a directory, combine all the files into a file for \
@@ -145,11 +144,11 @@ def parse_blast_results(blast_out_file):
     temp_file_name =  os.path.normpath(args.tmp_dir) + os.sep + "temp.aln"
     aln_FH = open(temp_file_name, 'w')
     for key, value in genome_counts.iteritems():
-        if value == args.number_query_genes:            
+        if value == NUM_QUERY_SEQUENCES:            
             aln_FH.write(">" + key + "\n" + genome_concat[value] + "\n")
         else:
             print('Only ' + str(value) + ' genes present in the genome '
-                + str(key) + '. Expected '  + str(args.number_query_genes)
+                + str(key) + '. Expected '  + str(NUM_QUERY_SEQUENCES)
                 + " removing " + str(key) + " from alignment")
     return temp_file_name
 
