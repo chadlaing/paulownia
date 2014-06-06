@@ -25,7 +25,7 @@ parser.add_argument("-b", "--blast_dir", help="The location of the blast \
     program directory", default="/usr/bin/")
 parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
     currently aligned genomes",
-    default=SCRIPT_DIRECTORY + "/data/universal_combinedX.aln")
+    default=SCRIPT_DIRECTORY + "/data/universal_combined.aln")
 parser.add_argument("-o", "--out_tree", help="The new tree based on all \
     previous genomes and the newly added one",
     default=SCRIPT_DIRECTORY+ "/data/universal_combined.tre")
@@ -38,8 +38,8 @@ parser.add_argument("-n", "--number_query_genes", help="The total number of \
 parser.add_argument("-p", "--percent_id_cutoff", help="The minimum percent \
     identity that a blast hit must have to be considered 'present'",
     default=90)
-parser.add_argument("-t","--number_of_threads", help="The number of threads \
-    to use in the alignment and tree building processes", default=1)
+parser.add_argument("-r","--number_of_threads", help="The number of threads \
+    to use in the alignment and tree building processes", default="1")
 args = parser.parse_args()
 
 
@@ -152,10 +152,12 @@ def create_new_alignment(temp_concat):
     aln_out_FH = open(temp_new_aln,"w")
 
     if os.path.isfile(args.alignment_file):
-        call([args.mafft_exe, "--thread", "3", "--add", temp_concat,
-              args.alignment_file],stdout=aln_out_FH)
+        call([args.mafft_exe, "--thread", args.number_of_threads,
+             "--add", temp_concat, args.alignment_file],stdout=aln_out_FH)
     else:
-        call([args.mafft_exe, "--thread", "3", temp_concat],stdout=aln_out_FH)
+        warnings.warn("No existing alignment file, creating new alignment")
+        call([args.mafft_exe, "--thread", args.number_of_threads,
+            temp_concat],stdout=aln_out_FH)
     return temp_new_aln
 
 
@@ -195,8 +197,6 @@ def create_new_tree(new_aln):
 blast_data = create_blast_data_file(args.new_data)
 blast_file = run_blast(blast_data)
 new_concat = parse_blast_results(blast_file)
-#new_aln = create_new_alignment(new_concat)
-#new_tree = create_new_tree(new_aln)
-#replace_old_file(args.alignment_file,new_aln)
-#replace_old_file(args.out_tree,new_tree)
+new_aln = create_new_alignment(new_concat)
+new_tree = create_new_tree(new_aln)
 
