@@ -25,7 +25,7 @@ parser.add_argument("-b", "--blast_dir", help="The location of the blast \
     program directory", default="/usr/bin/")
 parser.add_argument("-a", "--alignment_file", help="The alignment file of all \
     currently aligned genomes",
-    default=SCRIPT_DIRECTORY + "/data/universal_combined.aln")
+    default=SCRIPT_DIRECTORY + "previous.aln")
 parser.add_argument("-o", "--out_tree", help="The new tree based on all \
     previous genomes and the newly added one",
     default=SCRIPT_DIRECTORY+ "new_paulownia.tre")
@@ -42,6 +42,17 @@ parser.add_argument("-r","--number_of_threads", help="The number of threads \
     to use in the alignment and tree building processes", default="1")
 args = parser.parse_args()
 
+
+def count_query_sequences(query_file):
+    "Counts the number of query sequences in the multi-fasta input file"
+
+    in_FH = open(query_file,'r')
+
+    counter=0
+    for line in in_FH:
+        if line[:1] is '>':
+            counter += 1
+    return counter
 
 def create_blast_data_file(new_data):
     "If new_data is a directory, combine all the files into a file for \
