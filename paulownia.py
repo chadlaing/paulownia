@@ -7,7 +7,7 @@ from subprocess import call
 import shutil
 from collections import defaultdict
 
-"""Runs blast based on the 286 query genes, creates a concatenated alignment \
+"""Runs blast based on file of query genes, creates a concatenated alignment \
     for the new genome, adds to the existing universal alignment using MAFFT \
     and launches clearcut to generate a new tree"""
 
