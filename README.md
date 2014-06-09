@@ -4,7 +4,7 @@ PAULOWNIA is a python wrapper around [BLAST](http://blast.ncbi.nlm.nih.gov/Blast
 
 ## USAGE
 
-> python paulownia.py <new_genome / directory_of_genomes> <query_fasta_sequences>
+> python paulownia.py \<new_genome / directory_of_genomes\> \<query_fasta_sequences\>
 
 This assumes a single file for the new_genome, or a directory containing only fasta formatted genomes in directory_of_genomes. The query_fasta_sequences are a list of query sequences / genes for which a phylogeny should be built.
 
