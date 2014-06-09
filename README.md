@@ -14,15 +14,15 @@ If an existing alignment file is specified, the new genome(s) will be added to i
 
 ## OPTIONAL ARGUMENTS and their [DEFAULTS]
 
-> -h,--help               Displays usage information
-> -c,--clearcut_exe       The location of the clearcut executable [/usr/bin/clearcut]
-> -b,--blast_dir          The directory of the blast+ program suite [/usr/bin/]
-> -a,--alignment_file     The previous alignment to which the new genomes(s) should be added. [paulownia/previous.aln]
-> -o,--out_tree           The location where the newly generated tree should be output. [paulownia/new_paulownia.tre]
-> -m,--mafft_exe          The location of the MAFFT executable [/usr/bin/mafft]
-> -t,--tmp_dir            The location of created temporary files [/tmp/]
-> -p,--percent_id_cutoff  The percent identity that a query sequence must exist at in a genome for it to be considered present and used in the alignment [90]
-> -n,--number_of_threads  The number of threads to use in the creation of the new tree [1]
+* -h,--help               Displays usage information
+* -c,--clearcut_exe       The location of the clearcut executable [/usr/bin/clearcut]
+* -b,--blast_dir          The directory of the blast+ program suite [/usr/bin/]
+* -a,--alignment_file     The previous alignment to which the new genomes(s) should be added. [paulownia/previous.aln]
+* -o,--out_tree           The location where the newly generated tree should be output. [paulownia/new_paulownia.tre]
+* -m,--mafft_exe          The location of the MAFFT executable [/usr/bin/mafft]
+* -t,--tmp_dir            The location of created temporary files [/tmp/]
+* -p,--percent_id_cutoff  The percent identity that a query sequence must exist at in a genome for it to be considered present and used in the alignment [90]
+* -n,--number_of_threads  The number of threads to use in the creation of the new tree [1]
 
 ## EXAMPLE with *Salmonella enterica*
 584 *Salmonella enterica* genomes were used for analyses. Initially 330 core genes were identified, however, they were not universally present in all 584 genomes.
