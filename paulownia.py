@@ -52,6 +52,7 @@ def count_query_sequences(query_file):
     return counter
 
 NUM_QUERY_SEQUENCES = count_query_sequences(args.query)
+print("Number of query sequences: " + str(NUM_QUERY_SEQUENCES))
 
 def create_blast_data_file(new_data):
     "If new_data is a directory, combine all the files into a file for \
@@ -145,7 +146,7 @@ def parse_blast_results(blast_out_file):
     aln_FH = open(temp_file_name, 'w')
     for key, value in genome_counts.iteritems():
         if value == NUM_QUERY_SEQUENCES:            
-            aln_FH.write(">" + key + "\n" + genome_concat[value] + "\n")
+            aln_FH.write(">" + key + "\n" + genome_concat[key] + "\n")
         else:
             print('Only ' + str(value) + ' genes present in the genome '
                 + str(key) + '. Expected '  + str(NUM_QUERY_SEQUENCES)
@@ -207,6 +208,6 @@ def create_new_tree(new_aln):
 blast_data = create_blast_data_file(args.new_data)
 blast_file = run_blast(blast_data)
 new_concat = parse_blast_results(blast_file)
-new_aln = create_new_alignment(new_concat)
-new_tree = create_new_tree(new_aln)
+#new_aln = create_new_alignment(new_concat)
+#new_tree = create_new_tree(new_aln)
 
