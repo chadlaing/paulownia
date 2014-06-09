@@ -208,6 +208,6 @@ def create_new_tree(new_aln):
 blast_data = create_blast_data_file(args.new_data)
 blast_file = run_blast(blast_data)
 new_concat = parse_blast_results(blast_file)
-#new_aln = create_new_alignment(new_concat)
-#new_tree = create_new_tree(new_aln)
+new_aln = create_new_alignment(new_concat)
+new_tree = create_new_tree(new_aln)
 
