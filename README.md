@@ -31,7 +31,7 @@ If an existing alignment file is specified, the new genome(s) will be added to i
 
 286 genes were determined to be universally present, which were used for subsequent tree building `paulownia/data/query.fasta`. The alignment of these genes for the 584 genomes is found in `paulownia/data/universal_combined.aln`.
 
-To add one of the test genomes in `paulownia/data/salmonella_fasta_files/`:
+To add both of the test genomes in `paulownia/data/salmonella_fasta_files/`:
 
 >python paulownia.py data/salmonella_fasta_files/ data/query.fasta -a data/universal_combined.aln
 
