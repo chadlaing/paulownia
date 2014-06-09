@@ -25,14 +25,15 @@ If an existing alignment file is specified, the new genome(s) will be added to i
 -n,--number_of_threads  The number of threads to use in the creation of the new tree [1]
 
 ## EXAMPLE with *Salmonella enterica*
-584 *Salmonella enterica* genomes are present in the paulownia/Data/ folder.
-330 core genes were previously identified, however, they were not universally present in all genomes.
+584 *Salmonella enterica* genomes were used for analyses. Initially 330 core genes were identified, however, they were not universally present in all 584 genomes.
 
 > for i in *.aln; do if [ $(grep -c '>' $i) = 584 ]; then cp $i ~/workspace/core_tree/universal/; fi done
 
-286 genes were determined to be universally present, which were used for subsequent tree building `paulownia/data/query.fasta`. The alignment of these genes for the 584 genomes is found in `palownia/data/universal_combined.aln`.
+286 genes were determined to be universally present, which were used for subsequent tree building `paulownia/data/query.fasta`. The alignment of these genes for the 584 genomes is found in `paulownia/data/universal_combined.aln`.
 
 To add one of the test genomes in `paulownia/data/salmonella_fasta_files/`:
+
+>python paulownia.py data/salmonella_fasta_files/ data/query.fasta -a data/universal_combined.aln
 
 
 
